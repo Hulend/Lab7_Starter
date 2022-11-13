@@ -54,6 +54,20 @@ function initializeServiceWorker() {
   // B5. TODO - In the event that the service worker registration fails, console
   //            log that it has failed.
   // STEPS B6 ONWARDS WILL BE IN /sw.js
+  if('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('./sw.js', {
+          scope: './',
+        });
+        if(reg.waiting) {
+          console.log("Service Worker Success.");
+        }
+      } catch(e) {
+        console.log("Service Worker Failed.");
+      }
+    })
+  }
 }
 
 /**
@@ -69,6 +83,10 @@ async function getRecipes() {
   // A1. TODO - Check local storage to see if there are any recipes.
   //            If there are recipes, return them.
   /**************************/
+  let check = localStorage.getItem('recipes');
+  if(check !== null) {
+    return JSON.parse(check);
+  }
   // The rest of this method will be concerned with requesting the recipes
   // from the network
   // A2. TODO - Create an empty array to hold the recipes that you will fetch
@@ -78,6 +96,8 @@ async function getRecipes() {
   //            take two parameters - resolve, and reject. These are functions
   //            you can call to either resolve the Promise or Reject it.
   /**************************/
+  let lRecipes = [];
+  return new Promise(async (resolve, reject) => {
   // A4-A11 will all be *inside* the callback function we passed to the Promise
   // we're returning
   /**************************/
@@ -100,6 +120,23 @@ async function getRecipes() {
   //            resolve() method.
   // A10. TODO - Log any errors from catch using console.error
   // A11. TODO - Pass any errors to the Promise's reject() function
+    for(let i = 0; i < RECIPE_URLS.length;) {
+      try {
+        let url = await fetch(RECIPE_URLS[i]);
+        let json = await url.json();
+        lRecipes.push(json);
+        i++;
+        if(i == RECIPE_URLS.length) {
+          console.log(lRecipes);
+          saveRecipesToStorage(lRecipes);
+          resolve(lRecipes);
+        }
+      } catch(e) {
+        console.log(e);
+        reject(e);
+      }
+    }
+  });
 }
 
 /**
