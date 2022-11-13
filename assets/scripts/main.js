@@ -127,12 +127,11 @@ async function getRecipes() {
         lRecipes.push(json);
         i++;
         if(i == RECIPE_URLS.length) {
-          console.log(lRecipes);
           saveRecipesToStorage(lRecipes);
           resolve(lRecipes);
         }
       } catch(e) {
-        console.log(e);
+        console.error(e);
         reject(e);
       }
     }
